@@ -50,6 +50,7 @@ stages:
       inputs:
         command: 'pack'
         packagesToPack: '$(workingDirectory)/*/*.csproj'
+        configuration: '$(buildConfiguration)'
         packDestination: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)'
         versioningScheme: 'byEnvVar'
         versionEnvVar: 'nugetVersion'
@@ -59,4 +60,4 @@ stages:
         command: 'push'
         packagesToPush: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.nupkg;!$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.symbols.nupkg'
         nuGetFeedType: 'internal'
-        publishVstsFeed: '9745470a-b46f-4327-8a2c-134f6fb60b38/c088a1de-2243-4e38-a563-c3f05e8153a3'
+        publishVstsFeed: '9745470a-b46f-4327-8a2c-134f6fb60b38/381b212c-7b47-41d5-b072-c9455b46d0ee'
