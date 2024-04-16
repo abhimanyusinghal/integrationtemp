@@ -6,7 +6,7 @@ pool:
  
 variables:
   buildConfiguration: 'Debug'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/UA.Integration.Sdk'
   major: '0'
   minor: '1'
   revision: $[counter(variables['minor'], 1)] 
@@ -42,14 +42,14 @@ stages:
       displayName: Build 
       inputs:
         command: 'build'
-        projects: '$(workingDirectory)/*/*.csproj'
+        projects: '$(workingDirectory)/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
     
     - task: NuGetCommand@2
       displayName: Pack Nuget
       inputs:
         command: 'pack'
-        packagesToPack: '$(workingDirectory)/*/*.csproj'
+        packagesToPack: '$(workingDirectory)/*.csproj'
         configuration: '$(buildConfiguration)'
         packDestination: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)'
         versioningScheme: 'byEnvVar'
@@ -60,4 +60,4 @@ stages:
         command: 'push'
         packagesToPush: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.nupkg;!$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.symbols.nupkg'
         nuGetFeedType: 'internal'
-        publishVstsFeed: '9745470a-b46f-4327-8a2c-134f6fb60b38/381b212c-7b47-41d5-b072-c9455b46d0ee'
+        publishVstsFeed: '9745470a-b46f-4327-8a2c-134f6fb60b38/369633fc-59a1-41cc-8a98-55a267f8772f'
