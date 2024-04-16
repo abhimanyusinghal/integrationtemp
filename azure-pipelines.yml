@@ -43,7 +43,7 @@ stages:
       inputs:
         command: 'build'
         projects: '$(workingDirectory)/*.csproj'
-        arguments: '--configuration Debug'
+        arguments: '--configuration $(buildConfiguration)'
     
     - task: NuGetCommand@2
       displayName: Pack Nuget
