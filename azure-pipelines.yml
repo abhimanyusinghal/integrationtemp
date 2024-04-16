@@ -1,0 +1,63 @@
+trigger:
+- none
+
+pool:
+  vmImage: 'windows-latest'
+ 
+variables:
+  buildConfiguration: 'Debug'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
+  major: '0'
+  minor: '1'
+  revision: $[counter(variables['minor'], 1)] 
+  nugetVersion: '$(major).$(minor).$(revision)'
+  ArtifactNugetName: 'ua-integration-sdk-NugetPackage'
+  NUGET_ENABLE_LEGACY_CSPROJ_PACK: true
+
+stages:
+- stage: build_app
+  displayName: 'Build stage'
+  jobs:
+  - job: Build
+    displayName: 'Build Nuget Stage'
+    steps:
+
+    - task: NuGetToolInstaller@1
+      displayName: Install Nuget
+
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '7.0.x'
+      displayName: 'Install .NET Core SDK'
+
+    - task: NuGetCommand@2
+      displayName: Restore Nuget package
+      inputs:
+        command: 'restore'
+        restoreSolution: '**/*.csproj'
+        feedsToUse: 'select'
+        vstsFeed: ''
+    - task: DotNetCoreCLI@2
+      displayName: Build 
+      inputs:
+        command: 'build'
+        projects: '$(workingDirectory)/*/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+    
+    - task: NuGetCommand@2
+      displayName: Pack Nuget
+      inputs:
+        command: 'pack'
+        packagesToPack: '$(workingDirectory)/*/*.csproj'
+        configuration: '$(buildConfiguration)'
+        packDestination: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)'
+        versioningScheme: 'byEnvVar'
+        versionEnvVar: 'nugetVersion'
+    - task: NuGetCommand@2
+      displayName: Push Nuget
+      inputs:
+        command: 'push'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.nupkg;!$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)/*.symbols.nupkg'
+        nuGetFeedType: 'internal'
+        publishVstsFeed: '9745470a-b46f-4327-8a2c-134f6fb60b38/381b212c-7b47-41d5-b072-c9455b46d0ee'
