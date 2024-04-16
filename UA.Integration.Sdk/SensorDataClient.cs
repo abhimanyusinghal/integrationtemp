@@ -50,6 +50,21 @@ namespace UA.Integration.SDK
             return result?.SasUrls;
         }
 
+        public Task<SensorDataMessage> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SensorDataMessage>> FetchMultipleSensorMessages(string sensorSerialNumber, List<long> timestamps)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SensorDataMessage>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate)
+        {
+            throw new NotImplementedException();
+        }
+
         private class SasUrlResponse
         {
             public string SasUrl { get; set; }

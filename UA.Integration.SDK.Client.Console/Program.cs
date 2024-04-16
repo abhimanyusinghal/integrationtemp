@@ -10,7 +10,7 @@ var eventHubService = EventHubServiceFactory.Create(
     "your_consumer_group");
 
 //Creating the SensorDataClient
-var apiBaseUrl = "https://example.com/api"; // This should be replaced with the actual URL
+var apiBaseUrl = "https://example.com/api&code"; // This should be replaced with the actual URL
 var sensorDataClient = SensorDataClientFactory.Create(apiBaseUrl);
 
 
@@ -31,6 +31,27 @@ eventHubService.NewMessage += (sender, e) =>
 };
 
 eventHubService.Start();
+
+
+Console.WriteLine("Press any key to stop the Consumer");
+Console.ReadLine();
+eventHubService.Stop();
+
+
+Console.WriteLine("Fetching sensor messages");
+var sensorMessages = await sensorDataClient.FetchSensorMessagesForDateRange("sensorSerialNumber", 1640995200, 1641081600);
+
+foreach (var sensorMessage in sensorMessages)
+{
+    Console.WriteLine($"SensorId: {sensorMessage.SensorId}");
+    Console.WriteLine($"Timestamp: {sensorMessage.Timestamp}");
+    Console.WriteLine($"TraceParentId: {sensorMessage.TraceParentId}");
+    Console.WriteLine($"TraceId: {sensorMessage.TraceId}");
+    Console.WriteLine($"SpanId: {sensorMessage.SpanId}");
+    Console.WriteLine($"SensorType: {sensorMessage.SensorType}");
+    Console.WriteLine($"Scope: {sensorMessage.Scope}");
+    Console.WriteLine($"GatewayId: {sensorMessage.GatewayId}");
+}
 
 Console.WriteLine("Press any key to stop the application");
 Console.ReadLine();
