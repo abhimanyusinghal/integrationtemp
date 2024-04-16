@@ -42,14 +42,14 @@ stages:
       displayName: Build 
       inputs:
         command: 'build'
-        projects: '$(workingDirectory)/*.csproj'
+        projects: '$(workingDirectory)/*/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
     
     - task: NuGetCommand@2
       displayName: Pack Nuget
       inputs:
         command: 'pack'
-        packagesToPack: '$(workingDirectory)/*.csproj'
+        packagesToPack: '$(workingDirectory)/*/*.csproj'
         packDestination: '$(Build.ArtifactStagingDirectory)/$(ArtifactNugetName)'
         versioningScheme: 'byEnvVar'
         versionEnvVar: 'nugetVersion'
