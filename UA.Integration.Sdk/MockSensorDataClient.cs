@@ -7,30 +7,41 @@ namespace UA.Integration.SDK
     public class MockSensorDataClient : ISensorDataClient
     {
         private readonly HttpClient _httpClient;
-        private static string _sasUrl = "https://dlsperceptiv01t.blob.core.windows.net/s7100/6124017100203D/LowFrequencySpectrum/2024/01/25/19/15_00_1706210100.json?sp=r&st=2024-04-16T04:00:27Z&se=2025-04-16T12:00:27Z&spr=https&sv=2022-11-02&sr=b&sig=CKYdtntm1unOsV2bBfRvTI2TQsf7OMOS9JjHnyWXi8s%3D";
+        private static string _sasUrl = "https://dlsperceptiv01t.blob.core.windows.net/s7100/1F24150001000A/LowFrequencySpectrum/2024/05/31/16/10_00_1717171800.json?sp=r&st=2024-06-18T11:41:34Z&se=2024-12-31T19:41:34Z&spr=https&sv=2022-11-02&sr=b&sig=nHVUl2AkV2Qyul2hQM%2F%2BzVsWBhq3M2r0kEc%2Bd3bUVMg%3D";
+        private static string _sasUrl2 = "https://dlsperceptiv01t.blob.core.windows.net/s7100/1F24150001000A/RawFullSpectrum/2024/05/28/05/57_00_1716875820.json?sp=r&st=2024-06-18T11:42:39Z&se=2024-12-31T19:42:39Z&spr=https&sv=2022-11-02&sr=b&sig=VvQPXub5OhUDb78Ny6m7FRmw79M7swzjANvfv4ac2fU%3D";
         private readonly string _eventHubConnectionString;
         private readonly string _eventHubName;
+        private int _no;
 
         public MockSensorDataClient(HttpClient httpClient, string eventHubConnectionString, string eventHubName)
         {
             _httpClient = httpClient;
             _eventHubConnectionString = eventHubConnectionString;
             _eventHubName = eventHubName;
+            _no = 1;
         }
 
         public async Task<string> GenerateSingleSasUrl(string sensorSerialNumber, long unixEpochTimestamp, MeasurementType measurementType)
         {
-            return _sasUrl;
+            _no = _no + 1;
+            if (_no%2==1)
+            {
+                return _sasUrl;
+            }
+            else
+            {
+                return _sasUrl2;
+            }
         }
 
         public async Task<List<string>> GenerateMultipleSasUrls(string sensorSerialNumber, MeasurementType measurementType, List<long> timestamps)
         {
-            return new List<string> { _sasUrl };
+            return new List<string> { _sasUrl,_sasUrl2 };
         }
 
         public async Task<List<string>> GenerateSasUrlsForDateRange(string sensorSerialNumber, MeasurementType measurementType, long startDate, long endDate)
         {
-            return new List<string> { _sasUrl };
+            return new List<string> { _sasUrl,_sasUrl2 };
         }
 
         public async Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
@@ -82,6 +93,9 @@ namespace UA.Integration.SDK
                 PreviousHealthStatus = "Healthy",
                 SchemaVersion = "1.0",
                 FirmwareVer = "1.0.3",
+                config = new Config()
+                { AccelRange_g = 32f,SampleRate_Hz = 400.0f},
+
                 SensorParameters = new SensorParameters
                 {
                     BatteryStatus_V = 3.7,

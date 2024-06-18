@@ -10,6 +10,7 @@ namespace UA.Integration.SDK
     {
 
         public event EventHandler<WaveformDataAvailableEvent> NewMessage;
+        private int _no;
 
         private readonly System.Timers.Timer _timer;
 
@@ -19,23 +20,44 @@ namespace UA.Integration.SDK
             _timer = new System.Timers.Timer(10000); // Set the interval to 10 seconds (10000 milliseconds
             _timer.Elapsed += OnTimedEvent;
             _timer.AutoReset = true;
+            _no = 1;
         }
 
         private void OnTimedEvent(object sender, ElapsedEventArgs e)
         {
-            // Create and send a mock sensor data message
-            var rawDataAvailableEvent = new WaveformDataAvailableEvent
+            _no = _no + 1;
+            if (_no % 2 == 1)
             {
-                SensorSerialNumber = "6124017100203D",
-                Timestamp = 1706210100,
-                SensorType = "S7100",
-                MeasurementType = MeasurementType.LowFrequencyWaveform,
-                GatewaySerialNumber = "022401UGW4201E",
-                SensorScope = "/"
-            };
+                // Create and send a mock sensor data message
+                var rawDataAvailableEvent = new WaveformDataAvailableEvent
+                {
+                    SensorSerialNumber = "1F24150001000A",
+                    Timestamp = 1717171800,
+                    SensorType = "S7100",
+                    MeasurementType = MeasurementType.LowFrequencyWaveform,
+                    GatewaySerialNumber = "022401UGW4201E",
+                    SensorScope = "/"
+                };
+                // Raise the event
+                NewMessage?.Invoke(this, rawDataAvailableEvent);
+            }
+            else
+            {
+                var rawDataAvailableEvent = new WaveformDataAvailableEvent
+                {
+                    SensorSerialNumber = "1F24150001000A",
+                    Timestamp = 1716875820,
+                    SensorType = "S7100",
+                    MeasurementType = MeasurementType.FullWaveForm,
+                    GatewaySerialNumber = "022401UGW4201E",
+                    SensorScope = "/"
+                };
+                // Raise the event
+                NewMessage?.Invoke(this, rawDataAvailableEvent);
+            }
+          
 
-            // Raise the event
-            NewMessage?.Invoke(this, rawDataAvailableEvent);
+           
         }
         public async void Start()
         {
