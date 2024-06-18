@@ -3,7 +3,7 @@
     // Define the public interface
     public interface IEventHubService
     {
-        event EventHandler<RawDataAvailableEvent> NewMessage;
+        event EventHandler<WaveformDataAvailableEvent> NewMessage;
         void Start();
         void Stop();
     }

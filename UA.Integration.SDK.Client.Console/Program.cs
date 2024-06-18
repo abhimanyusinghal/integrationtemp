@@ -1,17 +1,26 @@
 ﻿// See https://aka.ms/new-console-template for more information
 Console.WriteLine("Example application on how to use the SDK");
 
+string blobConnectoionString = "your_blob_storage_connection_string";
+string blobContainerName = "your_blob_container_name";
+string consumerConnectionString = "event_hub_consumer_connectionstring";
+string consumerEventHubName = "consumer_event_hub_name";
+string consumerGroup = "consumer_group";
+string producerConnectionString = "event_hub_producer_connectoion_string";
+string producerEventHubName = "producer_event_hub_name";
+
 //Starting EventHubService
 var eventHubService = EventHubServiceFactory.Create(
-    "your_blob_storage_connection_string",
-    "your_blob_container_name",
-    "your_event_hubs_connection_string",
-    "your_event_hub_name",
-    "your_consumer_group");
+    blobConnectoionString,
+    blobContainerName,
+    consumerConnectionString,
+    consumerEventHubName,
+    consumerGroup);
 
 //Creating the SensorDataClient
 var apiBaseUrl = "https://example.com/api&code"; // This should be replaced with the actual URL
-var sensorDataClient = SensorDataClientFactory.Create(apiBaseUrl);
+
+var sensorDataClient = SensorDataClientFactory.Create(apiBaseUrl,producerConnectionString,producerEventHubName);
 
 
 //Subscribe to the RawDataAvailableEvent

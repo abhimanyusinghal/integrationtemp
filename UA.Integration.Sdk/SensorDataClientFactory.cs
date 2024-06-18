@@ -2,7 +2,7 @@
 
 public static class SensorDataClientFactory
 {
-    public static ISensorDataClient Create(string apiBaseUrl)
+    public static ISensorDataClient Create(string apiBaseUrl,string eventHubConnectionString, string eventHubName)
     {
         var httpClient = new HttpClient
         {
@@ -13,7 +13,7 @@ public static class SensorDataClientFactory
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
 #if MOCK
-        return new MockSensorDataClient(httpClient);
+        return new MockSensorDataClient(httpClient,eventHubConnectionString,eventHubName);
 #else
         return new SensorDataClient(httpClient);
 #endif

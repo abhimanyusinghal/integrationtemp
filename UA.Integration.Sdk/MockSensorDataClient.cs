@@ -8,11 +8,14 @@ namespace UA.Integration.SDK
     {
         private readonly HttpClient _httpClient;
         private static string _sasUrl = "https://dlsperceptiv01t.blob.core.windows.net/s7100/6124017100203D/LowFrequencySpectrum/2024/01/25/19/15_00_1706210100.json?sp=r&st=2024-04-16T04:00:27Z&se=2025-04-16T12:00:27Z&spr=https&sv=2022-11-02&sr=b&sig=CKYdtntm1unOsV2bBfRvTI2TQsf7OMOS9JjHnyWXi8s%3D";
+        private readonly string _eventHubConnectionString;
+        private readonly string _eventHubName;
 
-
-        public MockSensorDataClient(HttpClient httpClient)
+        public MockSensorDataClient(HttpClient httpClient, string eventHubConnectionString, string eventHubName)
         {
             _httpClient = httpClient;
+            _eventHubConnectionString = eventHubConnectionString;
+            _eventHubName = eventHubName;
         }
 
         public async Task<string> GenerateSingleSasUrl(string sensorSerialNumber, long unixEpochTimestamp, MeasurementType measurementType)
@@ -30,14 +33,14 @@ namespace UA.Integration.SDK
             return new List<string> { _sasUrl };
         }
 
-        public async Task<SensorDataMessage> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
+        public async Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
         {
             return await Task.FromResult(CreateMockSensorDataMessage(sensorSerialNumber, unixEpochTimestamp));
         }
 
-        public async Task<List<SensorDataMessage>> FetchMultipleSensorMessages(string sensorSerialNumber,  List<long> timestamps)
+        public async Task<List<SensorFeatureData>> FetchMultipleSensorMessages(string sensorSerialNumber,  List<long> timestamps)
         {
-            var messages = new List<SensorDataMessage>();
+            var messages = new List<SensorFeatureData>();
             foreach (var timestamp in timestamps)
             {
                 messages.Add(CreateMockSensorDataMessage(sensorSerialNumber, timestamp));
@@ -45,9 +48,9 @@ namespace UA.Integration.SDK
             return await Task.FromResult(messages);
         }
 
-        public async Task<List<SensorDataMessage>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate)
+        public async Task<List<SensorFeatureData>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate)
         {
-            var messages = new List<SensorDataMessage>();
+            var messages = new List<SensorFeatureData>();
             for (long date = startDate; date <= endDate; date += 86400) // Assume daily granularity
             {
                 messages.Add(CreateMockSensorDataMessage(sensorSerialNumber, date));
@@ -55,9 +58,9 @@ namespace UA.Integration.SDK
             return await Task.FromResult(messages);
         }
 
-        private SensorDataMessage CreateMockSensorDataMessage(string sensorSerialNumber, long timestamp)
+        private SensorFeatureData CreateMockSensorDataMessage(string sensorSerialNumber, long timestamp)
         {
-            return new SensorDataMessage
+            return new SensorFeatureData
             {
                 Id = Guid.NewGuid(),
                 SensorId = sensorSerialNumber,
@@ -99,6 +102,13 @@ namespace UA.Integration.SDK
                     SensorSignalStrength_dBm = -80
                 }
             };
+        }
+
+        public async Task<bool> PostFeaturesAsync(FeatureValueMessage featureValueMessage)
+        {
+            //Code to Store / Post the Feature Value Message to Event Hub
+            Console.WriteLine("Received " + featureValueMessage);
+            return  true;
         }
     }
 }

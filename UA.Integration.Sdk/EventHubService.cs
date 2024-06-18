@@ -9,7 +9,7 @@ namespace UA.Integration.SDK
     {
         private EventProcessorClient _processorClient;
 
-        public event EventHandler<RawDataAvailableEvent> NewMessage;
+        public event EventHandler<WaveformDataAvailableEvent> NewMessage;
 
         public EventHubService(string blobStorageConnectionString, string blobContainerName, string eventHubsConnectionString, string eventHubName, string consumerGroup)
         {
@@ -32,7 +32,7 @@ namespace UA.Integration.SDK
         private Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
             var eventData = eventArgs.Data;
-            var rawData = System.Text.Json.JsonSerializer.Deserialize<RawDataAvailableEvent>(eventData.Body.ToString());
+            var rawData = System.Text.Json.JsonSerializer.Deserialize<WaveformDataAvailableEvent>(eventData.Body.ToString());
 
             // Raise the NewMessage event
             NewMessage?.Invoke(this, rawData);

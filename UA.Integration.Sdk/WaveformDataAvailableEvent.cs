@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace UA.Integration.SDK
 {
     // Define the data schema as a class
-    public class RawDataAvailableEvent
+    public class WaveformDataAvailableEvent
     {
         public string GatewaySerialNumber { get; set; }
         public string SensorSerialNumber { get; set; }

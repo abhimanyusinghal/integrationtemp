@@ -50,17 +50,22 @@ namespace UA.Integration.SDK
             return result?.SasUrls;
         }
 
-        public Task<SensorDataMessage> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
+        public Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<SensorDataMessage>> FetchMultipleSensorMessages(string sensorSerialNumber, List<long> timestamps)
+        public Task<List<SensorFeatureData>> FetchMultipleSensorMessages(string sensorSerialNumber, List<long> timestamps)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<SensorDataMessage>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate)
+        public Task<List<SensorFeatureData>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> PostFeaturesAsync(FeatureValueMessage featureValueMessage)
         {
             throw new NotImplementedException();
         }

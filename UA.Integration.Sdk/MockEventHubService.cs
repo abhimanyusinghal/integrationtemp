@@ -9,7 +9,7 @@ namespace UA.Integration.SDK
     internal class MockEventHubService : IEventHubService
     {
 
-        public event EventHandler<RawDataAvailableEvent> NewMessage;
+        public event EventHandler<WaveformDataAvailableEvent> NewMessage;
 
         private readonly System.Timers.Timer _timer;
 
@@ -24,12 +24,12 @@ namespace UA.Integration.SDK
         private void OnTimedEvent(object sender, ElapsedEventArgs e)
         {
             // Create and send a mock sensor data message
-            var rawDataAvailableEvent = new RawDataAvailableEvent
+            var rawDataAvailableEvent = new WaveformDataAvailableEvent
             {
                 SensorSerialNumber = "6124017100203D",
                 Timestamp = 1706210100,
                 SensorType = "S7100",
-                MeasurementType = MeasurementType.LowFrequency,
+                MeasurementType = MeasurementType.LowFrequencyWaveform,
                 GatewaySerialNumber = "022401UGW4201E",
                 SensorScope = "/"
             };

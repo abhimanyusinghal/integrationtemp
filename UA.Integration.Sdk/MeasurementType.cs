@@ -2,8 +2,7 @@
 {
     public enum MeasurementType
     {
-        LowFrequency,
-        Raw
+        LowFrequencyWaveform,
+        FullWaveForm
     }
-
 }
