@@ -48,7 +48,7 @@ namespace UA.Integration.SDK
                     SensorSerialNumber = "1F24150001000A",
                     Timestamp = 1716875820,
                     SensorType = "S7100",
-                    MeasurementType = MeasurementType.FullWaveForm,
+                    MeasurementType = MeasurementType.FullWaveform,
                     GatewaySerialNumber = "022401UGW4201E",
                     SensorScope = "/"
                 };

@@ -3,6 +3,6 @@
     public enum MeasurementType
     {
         LowFrequencyWaveform,
-        FullWaveForm
+        FullWaveform
     }
 }
