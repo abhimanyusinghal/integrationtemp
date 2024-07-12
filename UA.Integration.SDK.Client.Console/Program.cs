@@ -1,7 +1,5 @@
 ﻿using Azure.Identity;
-using Azure.Storage.Blobs.Models;
-using Serilog;
-using Microsoft.ApplicationInsights.Extensibility;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
