@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
-using Serilog.Sinks.PeriodicBatching;
 
 using UA.Integration.SDK;
 
@@ -53,12 +52,6 @@ namespace UA.Integration.SDK
 
         public static void ConfigureLogging(this IServiceCollection services, IConfiguration configuration)
         {
-            var batchingOptions = new PeriodicBatchingSinkOptions
-            {
-                BatchSizeLimit = 1,  // Set small batch size
-                Period = TimeSpan.FromSeconds(1)  // Set frequent flush interval
-            };
-
             //Add Applicaiton Insights Logging Initialization
             var appInsightsConnectionString = configuration["InsightCM:ApplicationInsightsConnectionString"];
             Log.Logger = new LoggerConfiguration()

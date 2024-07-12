@@ -19,23 +19,12 @@ ApplicationHost.AppHost = Host.CreateDefaultBuilder(args)
                 config
                 .AddAzureAppConfiguration(options =>
                 {
-
-#if LOCAL
-  options
-                        .Connect(new Uri(endpoint), new DefaultAzureCredential())
-                        .ConfigureKeyVault(keyVaultConfig =>
-                        {
-                            keyVaultConfig.SetCredential(new DefaultAzureCredential());
-                        });
-#else
-                    //Settings for Running in Cloud VM Assigned for Insight CM
                     options
                         .Connect(new Uri(endpoint), new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }))
                         .ConfigureKeyVault(keyVaultConfig =>
                         {
                             keyVaultConfig.SetCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }));
                         });
-#endif
                 });
             })
              .ConfigureServices((hostContext, services) =>

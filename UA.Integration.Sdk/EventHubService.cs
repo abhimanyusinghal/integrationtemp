@@ -84,7 +84,14 @@ namespace UA.Integration.SDK
                             {
                                 var waveFormDataAvailableEvent = new WaveformDataAvailableEvent()
                                 {
-                                    // properties setup
+                                    GatewaySerialNumber = rawData.gatewayId,
+                                    SensorScope = rawData.scope,
+                                    SensorType = rawData.sensorType,
+                                    SensorSerialNumber = rawData.sensorId,
+                                    TenantId = rawData.tenantId,
+                                    Id = rawData.unifiedMessageId,
+                                    MeasurementType = rawData.measurementType == MeasurementType.FullWaveform.ToString() ? MeasurementType.FullWaveform : MeasurementType.LowFrequencyWaveform,
+                                    Timestamp = rawData.timestamp
                                 };
 
                                 // Raise the NewMessage event
