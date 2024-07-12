@@ -15,5 +15,8 @@ namespace UA.Integration.SDK
         public string SensorScope { get; set; }
         public long Timestamp { get; set; }
         public MeasurementType MeasurementType { get; set; }
+        public string TenantId { get; internal set; }
+        public string Id { get; internal set; }
+        public string TraceParentId { get; internal set; }
     }
 }
