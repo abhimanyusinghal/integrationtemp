@@ -15,7 +15,10 @@
     <PackageReference Include="Azure.Identity" Version="1.12.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.2.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="UA.Integration.SDK" Version="1.0.0-pre" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UA.Integration.Sdk\UA.Integration.SDK.csproj" />
   </ItemGroup>
 
   <ItemGroup>

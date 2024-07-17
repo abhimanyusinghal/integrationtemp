@@ -29,6 +29,10 @@ namespace UA.Integration.SDK
             var consumerGroup = configuration["InsightCM:ConsumerGroup"];
             var producerConnectionString = configuration["InsightCM:ProducerConnectionString"];
             var producerEventHubName = configuration["InsightCM:ProducerEventHubName"];
+            var mongoConnectionString = configuration["InsightCM:MongoConnectionString"];
+            var mongoDatabaseName = configuration["InsightCM:MongoDbName"];
+            var mongoCollectionName = configuration["InsightCM:MongoCollectionName"];
+
 
 
             services.AddSingleton<IEventHubService>(sp =>
@@ -46,7 +50,7 @@ namespace UA.Integration.SDK
             services.AddSingleton<ISensorDataClient>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<SensorDataClient>>();
-                return new SensorDataClient(storageAccountConnectionString, fileSystemName, logger);
+                return new SensorDataClient(storageAccountConnectionString, fileSystemName, logger,mongoConnectionString,mongoDatabaseName,mongoCollectionName);
             });
         }
 

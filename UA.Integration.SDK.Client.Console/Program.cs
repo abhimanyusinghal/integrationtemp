@@ -19,12 +19,18 @@ ApplicationHost.AppHost = Host.CreateDefaultBuilder(args)
                 config
                 .AddAzureAppConfiguration(options =>
                 {
+                    //options
+                    //    .Connect(new Uri(endpoint), new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }))
+                    //    .ConfigureKeyVault(keyVaultConfig =>
+                    //    {
+                    //        keyVaultConfig.SetCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }));
+                    //    });
                     options
-                        .Connect(new Uri(endpoint), new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }))
-                        .ConfigureKeyVault(keyVaultConfig =>
-                        {
-                            keyVaultConfig.SetCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityClientId }));
-                        });
+                     .Connect(new Uri(endpoint), new DefaultAzureCredential())
+                     .ConfigureKeyVault(keyVaultConfig =>
+                     {
+                         keyVaultConfig.SetCredential(new DefaultAzureCredential());
+                     });
                 });
             })
              .ConfigureServices((hostContext, services) =>
@@ -44,7 +50,7 @@ var sensorDataClient = ApplicationHost.AppHost.Services.GetRequiredService<ISens
 
 
 //Subscribe to the RawDataAvailableEvent
-eventHubService.NewMessage += (sender, e) =>
+eventHubService.NewMessage += async (sender, e) =>
 {
     Console.WriteLine($"New message received: {e.SensorSerialNumber}");
     Console.WriteLine($"Timestamp: {e.Timestamp}");
@@ -54,9 +60,18 @@ eventHubService.NewMessage += (sender, e) =>
     Console.WriteLine($"SensorScope: {e.SensorScope}");
 
 
+
+    var sensorFeatureData = await sensorDataClient.FetchSingleSensorMessage(e.SensorSerialNumber, e.Timestamp);
+
     //getting a single SAS URL
     var sasUrl = sensorDataClient.GenerateSingleSasUrl(e.SensorSerialNumber, e.MeasurementType, e.Timestamp).Result;
     Console.WriteLine($"SAS URL: {sasUrl}");
+
+    HttpClient client = new HttpClient();
+    var json = client.GetStringAsync(sasUrl).Result;
+    Console.WriteLine(json);
+
+
 
     //gettin multiple SAS Urls for Multiple timestamps
     var sasUrls1 = sensorDataClient.GenerateMultipleSasUrls(e.SensorSerialNumber, e.MeasurementType, new List<long>() { e.Timestamp, e.Timestamp, e.Timestamp }).Result;

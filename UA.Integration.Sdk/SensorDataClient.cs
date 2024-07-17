@@ -19,9 +19,15 @@ namespace UA.Integration.SDK
 
     using Microsoft.Extensions.Logging;
 
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Core.Configuration;
+
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     public class SensorDataClient : ISensorDataClient
@@ -30,11 +36,18 @@ namespace UA.Integration.SDK
         private readonly ILogger<SensorDataClient> _logger;
         private readonly string _fileSystemName;
 
-        public SensorDataClient(string storageAccountConnectionString, string fileSystemName, ILogger<SensorDataClient> logger)
+        private readonly IMongoCollection<BsonDocument> _collection;
+
+
+        public SensorDataClient(string storageAccountConnectionString, string fileSystemName, ILogger<SensorDataClient> logger,string mongoConnectionString, string mongoDbName,string mongoCollectionName)
         {
             _dataLakeServiceClient = new DataLakeServiceClient(storageAccountConnectionString);
             _fileSystemName = fileSystemName;
             _logger = logger;
+
+            var client = new MongoClient(mongoConnectionString);
+            var database = client.GetDatabase(mongoDbName);
+            _collection = database.GetCollection<BsonDocument>(mongoCollectionName);
         }
 
         public Task<List<SensorFeatureData>> FetchMultipleSensorMessages(string sensorSerialNumber, List<long> timestamps)
@@ -47,10 +60,65 @@ namespace UA.Integration.SDK
             throw new NotImplementedException();
         }
 
-        public Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
+        public async Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp)
         {
-            throw new NotImplementedException();
+
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("sensorId", sensorSerialNumber),
+                Builders<BsonDocument>.Filter.Eq("timestamp", unixEpochTimestamp)
+            );
+
+            var document = await _collection.Find(filter).FirstOrDefaultAsync();
+
+            if (document == null)
+                return null;
+
+            // Assuming you have a method to convert a BsonDocument to your SensorFeatureData object
+            return DeserializeSensorFeatureData(document);
         }
+
+        private SensorFeatureData DeserializeSensorFeatureData(BsonDocument document)
+        {
+            var data = new SensorFeatureData
+            {
+                Id = document["_id"].ToString(),
+                SensorId = document.TryGet("sensorId", out string sensorId) ? sensorId : default,
+                Timestamp = document.TryGet("timestamp", out long timestamp) ? timestamp : default,
+                TraceParentId = document.TryGet("traceParentId", out string traceParentId) ? traceParentId : default,
+                TraceId = document.TryGet("traceId", out string traceId) ? traceId : default,
+                SpanId = document.TryGet("spanId", out string spanId) ? spanId : default,
+                SensorType = document.TryGet("sensorType", out string sensorType) ? sensorType : default,
+                Scope = document.TryGet("scope", out string scope) ? scope : default,
+                GatewayId = document.TryGet("gatewayId", out string gatewayId) ? gatewayId : default,
+                GwTime = document.TryGet("gwTime", out long gwTime) ? gwTime : default,
+                Tags = document.Contains("tags") ? document["tags"].AsBsonArray.Select(t => t.AsString).ToList() : new List<string>(),
+                Config = document.Contains("config") ? DeserializeDictionary(document["config"].AsBsonDocument) : new Dictionary<string, object>(),
+                CreatedDate = document.TryGet("createdDate", out long createdDate) ? createdDate : default,
+                CoRelationId = document.TryGet("co-relationId", out string coRelationId) ? coRelationId : default,
+                CloudTimestamp = document.TryGet("cloudTimestamp", out long cloudTimestamp) ? cloudTimestamp : default,
+                TenantId = document.TryGet("tenantId", out string tenantId) ? tenantId : default,
+                ObjectClass = document.TryGet("objectClass", out string objectClass) ? objectClass : default,
+                ObjectType = document.TryGet("objectType", out string objectType) ? objectType : default,
+                ObjectSubType = document.TryGet("objectSubType", out string objectSubType) ? objectSubType : default,
+                PreviousHealthStatus = document.TryGet("previousHealthStatus", out string previousHealthStatus) ? previousHealthStatus : default,
+                SchemaVersion = document.TryGet("schemaVersion", out string schemaVersion) ? schemaVersion : default,
+                FirmwareVer = document.TryGet("firmwareVer", out string firmwareVer) ? firmwareVer : default,
+                SensorParameters = document.Contains("sensorParameters") ? DeserializeDictionary(document["sensorParameters"].AsBsonDocument) : new Dictionary<string, object>()
+            };
+
+            return data;
+        }
+
+        private Dictionary<string, object> DeserializeDictionary(BsonDocument parameters)
+        {
+            var dictionary = new Dictionary<string, object>();
+            foreach (var parameter in parameters)
+            {
+                dictionary[parameter.Name] = BsonTypeMapper.MapToDotNetValue(parameter.Value);
+            }
+            return dictionary;
+        }
+
 
         public async Task<List<string>> GenerateMultipleSasUrls(string sensorSerialNumber, MeasurementType measurementType, List<long> timestamps)
         {
