@@ -49,6 +49,15 @@ var eventHubService = ApplicationHost.AppHost.Services.GetRequiredService<IEvent
 var sensorDataClient = ApplicationHost.AppHost.Services.GetRequiredService<ISensorDataClient>();
 
 
+
+//getting multiple SAS Urls for a range
+await foreach(var sasUrl in  sensorDataClient.GenerateSasUrlsForDateRangeAsync("6124017100202E", MeasurementType.FullWaveform, ((DateTimeOffset)DateTime.Now.AddDays(-1)).ToUnixTimeSeconds(), ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()))
+{
+    Console.WriteLine($"SAS URL: {sasUrl}");
+
+}
+
+
 //Subscribe to the RawDataAvailableEvent
 eventHubService.NewMessage += async (sender, e) =>
 {

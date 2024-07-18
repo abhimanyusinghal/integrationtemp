@@ -15,6 +15,7 @@ namespace UA.Integration.SDK
 {
     using Azure.Storage.Blobs;
     using Azure.Storage.Files.DataLake;
+    using Azure.Storage.Files.DataLake.Models;
     using Azure.Storage.Sas;
 
     using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace UA.Integration.SDK
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
@@ -149,6 +151,7 @@ namespace UA.Integration.SDK
             return sasUrls;
         }
 
+
         public async Task<List<string>> GenerateSasUrlsForDateRange(string sensorSerialNumber, MeasurementType measurementType, long startDate, long endDate)
         {
             var sasUrls = new List<string>();
@@ -183,9 +186,16 @@ namespace UA.Integration.SDK
                                 var startMinute = (year == startDateTime.Year && month == startDateTime.Month && day == startDateTime.Day && hour == startDateTime.Hour) ? startDateTime.Minute : 0;
                                 var endMinute = (year == endDateTime.Year && month == endDateTime.Month && day == endDateTime.Day && hour == endDateTime.Hour) ? endDateTime.Minute : 59;
 
+                                var directoryPath = $"{sensorSerialNumber}/{measurementType}/{year:D4}/{month:D2}/{day:D2}/{hour:D2}";
+                                var directoryClient = fileSystemClient.GetDirectoryClient(directoryPath);
+
+                                if (!await directoryClient.ExistsAsync())
+                                {
+                                    continue;
+                                }
+
                                 for (var minute = startMinute; minute <= endMinute; minute++)
                                 {
-                                    var directoryPath = $"{sensorSerialNumber}/{measurementType}/{year:D4}/{month:D2}/{day:D2}/{hour:D2}";
                                     var prefix = $"{minute:D2}_";
 
                                     await foreach (var pathItem in fileSystemClient.GetPathsAsync(directoryPath, false))
@@ -215,6 +225,7 @@ namespace UA.Integration.SDK
                                             }
                                         }
                                     }
+
                                 }
                             }
                         }
@@ -236,6 +247,88 @@ namespace UA.Integration.SDK
 
             return sasUrls;
         }
+
+        public async IAsyncEnumerable<string> GenerateSasUrlsForDateRangeAsync(string sensorSerialNumber, MeasurementType measurementType, long startDate, long endDate)
+        {
+            var startDateTime = DateTimeOffset.FromUnixTimeSeconds(startDate).UtcDateTime;
+            var endDateTime = DateTimeOffset.FromUnixTimeSeconds(endDate).UtcDateTime;
+
+            _logger.LogInformation("Generating SAS URLs for date range {StartDate} to {EndDate}", startDateTime, endDateTime);
+
+            var fileSystemClient = _dataLakeServiceClient.GetFileSystemClient(_fileSystemName);
+
+            for (var year = startDateTime.Year; year <= endDateTime.Year; year++)
+            {
+                var startMonth = (year == startDateTime.Year) ? startDateTime.Month : 1;
+                var endMonth = (year == endDateTime.Year) ? endDateTime.Month : 12;
+
+                for (var month = startMonth; month <= endMonth; month++)
+                {
+                    var startDay = (year == startDateTime.Year && month == startDateTime.Month) ? startDateTime.Day : 1;
+                    var endDay = (year == endDateTime.Year && month == endDateTime.Month) ? endDateTime.Day : DateTime.DaysInMonth(year, month);
+
+                    for (var day = startDay; day <= endDay; day++)
+                    {
+                        var startHour = (year == startDateTime.Year && month == startDateTime.Month && day == startDateTime.Day) ? startDateTime.Hour : 0;
+                        var endHour = (year == endDateTime.Year && month == endDateTime.Month && day == endDateTime.Day) ? endDateTime.Hour : 23;
+
+                        for (var hour = startHour; hour <= endHour; hour++)
+                        {
+                            var startMinute = (year == startDateTime.Year && month == startDateTime.Month && day == startDateTime.Day && hour == startDateTime.Hour) ? startDateTime.Minute : 0;
+                            var endMinute = (year == endDateTime.Year && month == endDateTime.Month && day == endDateTime.Day && hour == endDateTime.Hour) ? endDateTime.Minute : 59;
+
+                            var directoryPath = $"{sensorSerialNumber}/{measurementType}/{year:D4}/{month:D2}/{day:D2}/{hour:D2}";
+                            var directoryClient = fileSystemClient.GetDirectoryClient(directoryPath);
+
+                            if (!await directoryClient.ExistsAsync())
+                            {
+                                continue;
+                            }
+
+                            for (var minute = startMinute; minute <= endMinute; minute++)
+                            {
+                                var prefix = $"{minute:D2}_";
+
+                                await foreach (var pathItem in fileSystemClient.GetPathsAsync(directoryPath, false))
+                                {
+                                    if (!pathItem.IsDirectory.HasValue || !pathItem.IsDirectory.Value)
+                                    {
+                                        var fileName = System.IO.Path.GetFileName(pathItem.Name);
+                                        if (fileName.StartsWith(prefix))
+                                        {
+
+                                            var parts = fileName.Split('_');
+                                            if (parts.Length >= 3 && long.TryParse(parts[2].Replace(".json", ""), out long fileTimestamp))
+                                            {
+                                                if (fileTimestamp >= startDate && fileTimestamp <= endDate)
+                                                {
+                                                    string sasUrl = string.Empty;
+                                                    try
+                                                    {
+                                                        sasUrl = await GenerateSingleSasUrl(sensorSerialNumber, measurementType, fileTimestamp);
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        _logger.LogError(ex, "Failed to generate SAS URL for file {FileName}", pathItem.Name);
+                                                    }
+                                                    if (string.IsNullOrEmpty(sasUrl) == false)
+                                                    {
+                                                        yield return sasUrl;
+                                                    }
+                                                }
+                                            }
+
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
 
         public async Task<string> GenerateSingleSasUrl(string sensorSerialNumber, MeasurementType measurementType, long unixEpochTimestamp)

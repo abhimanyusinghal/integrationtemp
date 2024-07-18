@@ -9,6 +9,6 @@
         Task<SensorFeatureData> FetchSingleSensorMessage(string sensorSerialNumber, long unixEpochTimestamp);
         Task<List<SensorFeatureData>> FetchMultipleSensorMessages(string sensorSerialNumber, List<long> timestamps);
         Task<List<SensorFeatureData>> FetchSensorMessagesForDateRange(string sensorSerialNumber, long startDate, long endDate);
-     
+        IAsyncEnumerable<string> GenerateSasUrlsForDateRangeAsync(string sensorSerialNumber, MeasurementType measurementType, long startDate, long endDate);
     }
 }
